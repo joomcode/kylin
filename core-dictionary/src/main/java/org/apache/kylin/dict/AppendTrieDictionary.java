@@ -1157,8 +1157,8 @@ public class AppendTrieDictionary<T> extends CacheDictionary<T> {
             indexOut.writeInt(nValues);
             indexOut.writeUTF(bytesConvert.getClass().getName());
             dictSliceMap.write(indexOut);
-            dictSliceMap.commit(keepAppend);
         }
+        dictSliceMap.commit(keepAppend);
     }
 
     @Override
