@@ -18,6 +18,7 @@
 
 package org.apache.kylin.engine.mr.common;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.kylin.cube.model.CubeBuildTypeEnum;
@@ -28,6 +29,7 @@ import org.apache.kylin.job.common.ShellExecutable;
 import org.apache.kylin.job.constant.JobStatusEnum;
 import org.apache.kylin.job.constant.JobStepStatusEnum;
 import org.apache.kylin.job.execution.AbstractExecutable;
+import org.apache.kylin.job.execution.DefaultOutput;
 import org.apache.kylin.job.execution.ExecutableState;
 import org.apache.kylin.job.execution.Output;
 
@@ -41,6 +43,12 @@ public class JobInfoConverter {
         Preconditions.checkState(job instanceof CubingJob, "illegal job type, id:" + job.getId());
         CubingJob cubeJob = (CubingJob) job;
         Output output = outputs.get(job.getId());
+        if (output == null){
+            DefaultOutput defaultOutput = new DefaultOutput();
+            defaultOutput.setLastModified(System.currentTimeMillis());
+            defaultOutput.setState(ExecutableState.ERROR);
+            output = defaultOutput;
+        }
         final JobInstance result = new JobInstance();
         result.setName(job.getName());
         result.setRelatedCube(CubingExecutableUtil.getCubeName(cubeJob.getParams()));
@@ -56,7 +64,15 @@ public class JobInfoConverter {
         result.setDuration(AbstractExecutable.getDuration(result.getExecStartTime(), result.getExecEndTime()) / 1000);
         for (int i = 0; i < cubeJob.getTasks().size(); ++i) {
             AbstractExecutable task = cubeJob.getTasks().get(i);
-            result.addStep(parseToJobStep(task, i, outputs.get(task.getId())));
+            Output stepOutput = outputs.get(task.getId());
+            if (stepOutput == null){
+                DefaultOutput defaultOutput = new DefaultOutput();
+                defaultOutput.setLastModified(System.currentTimeMillis());
+                defaultOutput.setState(ExecutableState.ERROR);
+                defaultOutput.setExtra(new HashMap<String, String>());
+                stepOutput = defaultOutput;
+            }
+            result.addStep(parseToJobStep(task, i, stepOutput));
         }
         return result;
     }
