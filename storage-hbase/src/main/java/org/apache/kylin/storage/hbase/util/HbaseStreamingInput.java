@@ -39,7 +39,6 @@ import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.Table;
-import org.apache.hadoop.hbase.regionserver.DisabledRegionSplitPolicy;
 import org.apache.kylin.common.KylinConfig;
 import org.apache.kylin.common.util.Bytes;
 import org.apache.kylin.storage.hbase.HBaseConnection;
@@ -70,7 +69,6 @@ public class HbaseStreamingInput {
 
             logger.info("Creating HTable '" + tableName + "'");
             HTableDescriptor desc = new HTableDescriptor(TableName.valueOf(tableName));
-            desc.setValue(HTableDescriptor.SPLIT_POLICY, DisabledRegionSplitPolicy.class.getName());//disable region split
             desc.setMemStoreFlushSize(512 << 20);//512M
 
             HColumnDescriptor fd = new HColumnDescriptor(CF);

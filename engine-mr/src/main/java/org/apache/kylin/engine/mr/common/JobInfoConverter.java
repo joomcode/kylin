@@ -44,10 +44,7 @@ public class JobInfoConverter {
         CubingJob cubeJob = (CubingJob) job;
         Output output = outputs.get(job.getId());
         if (output == null){
-            DefaultOutput defaultOutput = new DefaultOutput();
-            defaultOutput.setLastModified(System.currentTimeMillis());
-            defaultOutput.setState(ExecutableState.ERROR);
-            output = defaultOutput;
+            output = createDefaultOutput();
         }
         final JobInstance result = new JobInstance();
         result.setName(job.getName());
@@ -66,15 +63,19 @@ public class JobInfoConverter {
             AbstractExecutable task = cubeJob.getTasks().get(i);
             Output stepOutput = outputs.get(task.getId());
             if (stepOutput == null){
-                DefaultOutput defaultOutput = new DefaultOutput();
-                defaultOutput.setLastModified(System.currentTimeMillis());
-                defaultOutput.setState(ExecutableState.ERROR);
-                defaultOutput.setExtra(new HashMap<String, String>());
-                stepOutput = defaultOutput;
+                stepOutput = createDefaultOutput();
             }
             result.addStep(parseToJobStep(task, i, stepOutput));
         }
         return result;
+    }
+
+    private static DefaultOutput createDefaultOutput() {
+        DefaultOutput defaultOutput = new DefaultOutput();
+        defaultOutput.setLastModified(System.currentTimeMillis());
+        defaultOutput.setState(ExecutableState.ERROR);
+        defaultOutput.setExtra(new HashMap<String, String>());
+        return defaultOutput;
     }
 
     public static JobInstance.JobStep parseToJobStep(AbstractExecutable task, int i, Output stepOutput) {
