@@ -31,6 +31,7 @@ import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.io.compress.Compression.Algorithm;
 import org.apache.hadoop.hbase.io.encoding.DataBlockEncoding;
 import org.apache.hadoop.hbase.regionserver.BloomType;
+import org.apache.hadoop.hbase.regionserver.ConstantSizeRegionSplitPolicy;
 import org.apache.hadoop.hbase.regionserver.DisabledRegionSplitPolicy;
 import org.apache.hadoop.hbase.security.User;
 import org.apache.kylin.common.KylinConfig;
@@ -60,7 +61,6 @@ public class CubeHTableUtil {
         KylinConfig kylinConfig = cubeDesc.getConfig();
 
         HTableDescriptor tableDesc = new HTableDescriptor(TableName.valueOf(cubeSegment.getStorageLocationIdentifier()));
-        tableDesc.setValue(HTableDescriptor.SPLIT_POLICY, DisabledRegionSplitPolicy.class.getName());
         tableDesc.setValue(IRealizationConstants.HTableTag, kylinConfig.getMetadataUrlPrefix());
         tableDesc.setValue(IRealizationConstants.HTableCreationTime, String.valueOf(System.currentTimeMillis()));
 
@@ -137,7 +137,8 @@ public class CubeHTableUtil {
             }
 
             HTableDescriptor tableDesc = new HTableDescriptor(tableName);
-            tableDesc.setValue(HTableDescriptor.SPLIT_POLICY, DisabledRegionSplitPolicy.class.getName());
+            tableDesc.setValue(HTableDescriptor.SPLIT_POLICY, ConstantSizeRegionSplitPolicy.class.getName());
+            tableDesc.setValue(HTableDescriptor.MAX_FILESIZE, Long.toString(1 << 30L));
 
             KylinConfig kylinConfig = KylinConfig.getInstanceFromEnv();
             tableDesc.addFamily(createColumnFamily(kylinConfig, cfName, false));
