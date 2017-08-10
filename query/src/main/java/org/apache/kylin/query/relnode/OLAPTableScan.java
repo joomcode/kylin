@@ -30,6 +30,7 @@ import org.apache.calcite.linq4j.tree.Blocks;
 import org.apache.calcite.linq4j.tree.Expressions;
 import org.apache.calcite.linq4j.tree.MethodCallExpression;
 import org.apache.calcite.linq4j.tree.Primitive;
+import org.apache.calcite.linq4j.tree.Expression;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.plan.RelOptPlanner;
@@ -283,13 +284,18 @@ public class OLAPTableScan extends TableScan implements OLAPRel, EnumerableRel {
 
     @Override
     public Result implement(EnumerableRelImplementor implementor, Prefer pref) {
+        JavaImplementor javaImplementor = (JavaImplementor)implementor;
 
         context.setReturnTupleInfo(rowType, columnRowType);
         String execFunction = genExecFunc();
 
         PhysType physType = PhysTypeImpl.of(implementor.getTypeFactory(), this.rowType, pref.preferArray());
         MethodCallExpression exprCall = Expressions.call(table.getExpression(OLAPTable.class), execFunction, implementor.getRootExpression(), Expressions.constant(context.id));
-        return implementor.result(physType, Blocks.toBlock(exprCall));
+
+        String variableName = "scan" + getId();
+        Expression exprCallResult = javaImplementor.addInitializer(variableName, exprCall);
+
+        return implementor.result(physType, Blocks.toBlock(exprCallResult));
     }
 
     private String genExecFunc() {

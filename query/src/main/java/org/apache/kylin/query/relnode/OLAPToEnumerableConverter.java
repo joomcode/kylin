@@ -25,7 +25,9 @@ import org.apache.calcite.adapter.enumerable.EnumerableRel;
 import org.apache.calcite.adapter.enumerable.EnumerableRelImplementor;
 import org.apache.calcite.adapter.enumerable.PhysType;
 import org.apache.calcite.adapter.enumerable.PhysTypeImpl;
+import org.apache.calcite.linq4j.tree.BlockBuilder;
 import org.apache.calcite.linq4j.tree.Blocks;
+import org.apache.calcite.linq4j.tree.Expression;
 import org.apache.calcite.linq4j.tree.Expressions;
 import org.apache.calcite.plan.ConventionTraitDef;
 import org.apache.calcite.plan.RelOptCluster;
@@ -105,7 +107,13 @@ public class OLAPToEnumerableConverter extends ConverterImpl implements Enumerab
             System.out.println(dumpPlan);
         }
 
-        return impl.visitChild(this, 0, inputAsEnum, pref);
+        Result visitResult = impl.visitChild(this, 0, inputAsEnum, pref);
+
+        BlockBuilder blockBuilder = impl.getInitializersBlockBuilder();
+        Expression enumerable = blockBuilder.append("enumerable", visitResult.block);
+        blockBuilder.add(
+                Expressions.return_(null, enumerable));
+        return new Result(blockBuilder.toBlock(), visitResult.physType, visitResult.format);
     }
 
     private List<OLAPContext> listContextsHavingScan() {

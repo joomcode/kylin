@@ -66,7 +66,7 @@ public class OLAPQuery extends AbstractEnumerable<Object[]> implements Enumerabl
             throw new IllegalArgumentException("Wrong type " + type + "!");
         }
     }
-    
+
     private static class EmptyEnumerator implements Enumerator<Object[]> {
         
         EmptyEnumerator() {

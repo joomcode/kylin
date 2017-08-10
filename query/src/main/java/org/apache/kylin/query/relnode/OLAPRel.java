@@ -26,6 +26,8 @@ import java.util.Stack;
 
 import org.apache.calcite.adapter.enumerable.EnumerableRel;
 import org.apache.calcite.adapter.enumerable.EnumerableRelImplementor;
+import org.apache.calcite.linq4j.tree.BlockBuilder;
+import org.apache.calcite.linq4j.tree.Expression;
 import org.apache.calcite.plan.Convention;
 import org.apache.calcite.plan.RelTrait;
 import org.apache.calcite.plan.RelTraitSet;
@@ -192,6 +194,7 @@ public interface OLAPRel extends RelNode {
      */
     public static class JavaImplementor extends EnumerableRelImplementor {
 
+        private BlockBuilder initializers = new BlockBuilder();
         private IdentityHashMap<EnumerableRel, OLAPContext> relContexts = Maps.newIdentityHashMap();
         private boolean calciteDebug = System.getProperty("calcite.debug") != null;
 
@@ -212,6 +215,14 @@ public interface OLAPRel extends RelNode {
             EnumerableRel result = parent.implementEnumerable(enumInputs);
             relContexts.put(result, parent.getContext());
             return result;
+        }
+
+        public Expression addInitializer(String name, Expression initializer){
+            return initializers.append(name, initializer, false);
+        }
+
+        public BlockBuilder getInitializersBlockBuilder() {
+            return initializers;
         }
 
         @Override
