@@ -49,7 +49,7 @@ public class OLAPEnumerator implements Enumerator<Object[]> {
     public OLAPEnumerator(OLAPContext olapContext, DataContext optiqContext) {
         this.olapContext = olapContext;
         this.optiqContext = optiqContext;
-        this.cursor = null;
+        this.cursor = queryStorage();
     }
 
     @Override
