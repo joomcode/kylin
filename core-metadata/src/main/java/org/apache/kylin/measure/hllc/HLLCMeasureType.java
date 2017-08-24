@@ -18,6 +18,7 @@
 
 package org.apache.kylin.measure.hllc;
 
+import java.util.List;
 import java.util.Map;
 
 import org.apache.kylin.common.util.Dictionary;
@@ -32,11 +33,13 @@ import org.apache.kylin.metadata.model.MeasureDesc;
 import org.apache.kylin.metadata.model.TblColRef;
 
 import com.google.common.collect.ImmutableMap;
+import org.apache.kylin.metadata.realization.SQLDigest;
 
 public class HLLCMeasureType extends MeasureType<HLLCounter> {
     private static final long serialVersionUID = 1L;
 
     public static final String FUNC_COUNT_DISTINCT = FunctionDesc.FUNC_COUNT_DISTINCT;
+    public static final String FUNC_COUNT_DISTINCT_IF = "COUNT_DISTINCT_IF_HLLC";
     public static final String DATATYPE_HLLC = "hllc";
 
     public static class Factory extends MeasureTypeFactory<HLLCounter> {
@@ -135,7 +138,9 @@ public class HLLCMeasureType extends MeasureType<HLLCounter> {
         return true;
     }
 
-    static final Map<String, Class<?>> UDAF_MAP = ImmutableMap.<String, Class<?>> of(FUNC_COUNT_DISTINCT, HLLDistinctCountAggFunc.class);
+    static final Map<String, Class<?>> UDAF_MAP = ImmutableMap.<String, Class<?>> of(
+            FUNC_COUNT_DISTINCT, HLLDistinctCountAggFunc.class,
+            FUNC_COUNT_DISTINCT_IF, HLLDistinctCountIfAggFunc.class);
     
     @Override
     public Map<String, Class<?>> getRewriteCalciteAggrFunctions() {
@@ -145,5 +150,15 @@ public class HLLCMeasureType extends MeasureType<HLLCounter> {
     public static boolean isCountDistinct(FunctionDesc func) {
         return FUNC_COUNT_DISTINCT.equalsIgnoreCase(func.getExpression());
     }
-    
+
+    @Override
+    public void adjustSqlDigest(List<MeasureDesc> measureDescs, SQLDigest sqlDigest) {
+        for (SQLDigest.SQLCall call : sqlDigest.aggrSqlCalls) {
+            if (FUNC_COUNT_DISTINCT_IF.equals(call.function)) {
+                TblColRef col = (TblColRef) call.args.get(1);
+                if (!sqlDigest.groupbyColumns.contains(col))
+                    sqlDigest.groupbyColumns.add(col);
+            }
+        }
+    }
 }
