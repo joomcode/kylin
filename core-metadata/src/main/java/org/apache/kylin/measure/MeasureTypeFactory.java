@@ -18,6 +18,7 @@
 
 package org.apache.kylin.measure;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -89,8 +90,8 @@ abstract public class MeasureTypeFactory<T> {
     // ============================================================================
 
     final private static Map<String, List<MeasureTypeFactory<?>>> factories = Maps.newHashMap();
-    final private static Map<String, Class<?>> udafMap = Maps.newHashMap(); // a map from UDAF to Calcite aggregation function implementation class
-    final private static Map<String, MeasureTypeFactory> udafFactories = Maps.newHashMap(); // a map from UDAF to its owner factory
+    final private static Map<String, List<Class<?>>> udafMap = Maps.newHashMap(); // a map from UDAF to Calcite aggregation function implementation class
+    final private static Map<String, List<MeasureTypeFactory>> udafFactories = Maps.newHashMap(); // a map from UDAF to its owner factory
     final private static List<MeasureTypeFactory<?>> defaultFactory = Lists.newArrayListWithCapacity(2);
 
     static {
@@ -158,24 +159,47 @@ abstract public class MeasureTypeFactory<T> {
         if (type.needRewrite() == false || udafs == null)
             return;
 
-        for (String udaf : udafs.keySet()) {
-            udaf = udaf.toUpperCase();
+        for (Map.Entry<String, Class<?>> entry : udafs.entrySet()) {
+            Class<?> udafClass = entry.getValue();
+            String udaf =  entry.getKey().toUpperCase();
             if (udaf.equals(FunctionDesc.FUNC_COUNT_DISTINCT))
                 continue; // skip built-in function
 
-            if (udafFactories.containsKey(udaf))
-                throw new IllegalStateException("UDAF '" + udaf + "' was dup declared by " + udafFactories.get(udaf) + " and " + factory);
+            if (!udafFactories.containsKey(udaf)) {
+                udafFactories.put(udaf, new ArrayList<MeasureTypeFactory>());
+                udafMap.put(udaf, new ArrayList<Class<?>>());
+            }
 
-            udafFactories.put(udaf, factory);
-            udafMap.put(udaf, udafs.get(udaf));
+            for (MeasureTypeFactory measureTypeFactory : udafFactories.get(udaf)) {
+                if (!measureTypeFactory.getAggrFunctionName().equalsIgnoreCase(factory.getAggrFunctionName())) {
+                    throw new IllegalStateException("UDAF '" + udaf + "' was dup declared by " + measureTypeFactory + " and " + factory + " and aggrFunctionName doesn't match");
+                }
+            }
+
+            try {
+                int measureCount = ((ParamAsMeasureCount) (udafClass.newInstance())).getParamAsMeasureCount();
+                for (Class<?> clazz : udafMap.get(udaf)) {
+                    int storedMeasureCount = ((ParamAsMeasureCount) (clazz.newInstance())).getParamAsMeasureCount();
+                    if (measureCount != storedMeasureCount){
+                        throw new IllegalStateException("UDAF '" + udaf + "' was dup declared by and storedMeasureCount doesn't match");
+                    }
+                }
+            } catch (RuntimeException e){
+                throw e;
+            } catch (Exception e) {
+                throw new IllegalStateException(e);
+            }
+
+            udafFactories.get(udaf).add(factory);
+            udafMap.get(udaf).add(udafClass);
         }
     }
 
-    public static Map<String, Class<?>> getUDAFs() {
+    public static Map<String, List<Class<?>>> getUDAFs() {
         return udafMap;
     }
 
-    public static Map<String, MeasureTypeFactory> getUDAFFactories() {
+    public static Map<String, List<MeasureTypeFactory>> getUDAFFactories() {
         return udafFactories;
     }
 

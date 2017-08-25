@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -144,8 +145,8 @@ public class OLAPSchemaFactory implements SchemaFactory {
     private static void createOLAPSchemaFunctions(Writer out) throws IOException {
         Map<String, String> udfs = Maps.newHashMap();
         udfs.putAll(KylinConfig.getInstanceFromEnv().getUDFs());
-        for (Entry<String, Class<?>> entry : MeasureTypeFactory.getUDAFs().entrySet()) {
-            udfs.put(entry.getKey(), entry.getValue().getName());
+        for (Entry<String, List<Class<?>>> entry : MeasureTypeFactory.getUDAFs().entrySet()) {
+            udfs.put(entry.getKey(), entry.getValue().get(0).getName());
         }
 
         int index = 0;

@@ -77,7 +77,7 @@ public class HLLDistinctCountIfAggFunc implements ParamAsMeasureCount {
 
     @Override
     public int getParamAsMeasureCount() {
-        return -2;
+        return 1;
     }
 
     @SuppressWarnings("serial")

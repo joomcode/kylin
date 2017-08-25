@@ -83,15 +83,20 @@ public class OLAPAggregateRel extends Aggregate implements OLAPRel {
         AGGR_FUNC_MAP.put("MAX", "MAX");
         AGGR_FUNC_MAP.put("MIN", "MIN");
 
-        Map<String, MeasureTypeFactory> udafFactories = MeasureTypeFactory.getUDAFFactories();
+        Map<String, List<MeasureTypeFactory>> udafFactories = MeasureTypeFactory.getUDAFFactories();
         for (String udaf : udafFactories.keySet()) {
-            AGGR_FUNC_MAP.put(udaf, udafFactories.get(udaf).getAggrFunctionName());
+            String name = udafFactories.get(udaf).get(0).getAggrFunctionName();
+            if (name != null) {
+                AGGR_FUNC_MAP.put(udaf, name);
+            } else {
+                AGGR_FUNC_MAP.put(udaf, udaf);
+            }
         }
 
-        Map<String, Class<?>> udafs = MeasureTypeFactory.getUDAFs();
+        Map<String, List<Class<?>>> udafs = MeasureTypeFactory.getUDAFs();
         for (String func : udafs.keySet()) {
             try {
-                AGGR_FUNC_PARAM_AS_MEASTURE_MAP.put(func, ((ParamAsMeasureCount) (udafs.get(func).newInstance())).getParamAsMeasureCount());
+                AGGR_FUNC_PARAM_AS_MEASTURE_MAP.put(func, ((ParamAsMeasureCount) (udafs.get(func).get(0).newInstance())).getParamAsMeasureCount());
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

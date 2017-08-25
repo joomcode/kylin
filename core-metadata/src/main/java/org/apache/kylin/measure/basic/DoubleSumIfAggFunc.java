@@ -16,25 +16,22 @@
  * limitations under the License.
 */
 
-package org.apache.kylin.measure.bitmap;
+package org.apache.kylin.measure.basic;
 
 import org.apache.kylin.measure.ParamAsMeasureCount;
 
-/**
- * Bitmap-based distinct count if UDAF, called by calcite runtime.
- */
-public class BitmapDistinctCountIfAggFunc implements ParamAsMeasureCount {
+public class DoubleSumIfAggFunc implements ParamAsMeasureCount {
 
     @Override
     public int getParamAsMeasureCount() {
         return 1;
     }
 
-    public static BitmapAggregator init() {
-        return new BitmapAggregator();
+    public static DoubleSumAggregator init() {
+        return new DoubleSumAggregator();
     }
 
-    public static BitmapAggregator add(BitmapAggregator agg, Object value, Object key, Object keyValue) {
+    public static DoubleSumAggregator add(DoubleSumAggregator agg, Object value, Object key, Object keyValue) {
         if (key == null) {
             if (keyValue != null) {
                 return agg;
@@ -43,20 +40,20 @@ public class BitmapDistinctCountIfAggFunc implements ParamAsMeasureCount {
             return agg;
         }
 
-        agg.aggregate((BitmapCounter) value);
+        agg.aggregate((Double)value);
         return agg;
     }
 
-    public static BitmapAggregator merge(BitmapAggregator agg, Object value, Object key, Object keyValue) {
-        BitmapAggregator agg2 = (BitmapAggregator) value;
+    public static DoubleSumAggregator merge(DoubleSumAggregator agg, Object value, Object key, Object keyValue) {
+        DoubleSumAggregator agg2 = (DoubleSumAggregator) value;
         if (agg2.getState() == null) {
             return agg;
         }
         return add(agg, agg2.getState(), key, keyValue);
     }
 
-    public static long result(BitmapAggregator agg) {
-        BitmapCounter finalState = agg.getState();
-        return finalState == null ? 0 : finalState.getCount();
+    public static Double result(DoubleSumAggregator agg) {
+        Double finalState = agg.getState();
+        return finalState == null ? 0 : finalState;
     }
 }

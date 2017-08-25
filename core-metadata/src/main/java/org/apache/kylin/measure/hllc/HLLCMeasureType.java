@@ -39,7 +39,7 @@ public class HLLCMeasureType extends MeasureType<HLLCounter> {
     private static final long serialVersionUID = 1L;
 
     public static final String FUNC_COUNT_DISTINCT = FunctionDesc.FUNC_COUNT_DISTINCT;
-    public static final String FUNC_COUNT_DISTINCT_IF = "COUNT_DISTINCT_IF_HLLC";
+    public static final String FUNC_COUNT_DISTINCT_IF = "COUNT_DISTINCT_IF";
     public static final String DATATYPE_HLLC = "hllc";
 
     public static class Factory extends MeasureTypeFactory<HLLCounter> {

@@ -175,11 +175,11 @@ public class FunctionDesc implements Serializable {
     }
 
     public boolean isSum() {
-        return FUNC_SUM.equalsIgnoreCase(expression);
+        return FUNC_SUM.equalsIgnoreCase(expression) || "SUM_IF".equalsIgnoreCase(expression);
     }
 
     public boolean isCount() {
-        return FUNC_COUNT.equalsIgnoreCase(expression);
+        return FUNC_COUNT.equalsIgnoreCase(expression) || "COUNT_IF".equalsIgnoreCase(expression);
     }
 
     public boolean isCountDistinct() {

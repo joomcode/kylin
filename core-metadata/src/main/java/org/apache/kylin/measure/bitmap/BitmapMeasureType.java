@@ -46,7 +46,7 @@ import com.google.common.collect.ImmutableMap;
 public class BitmapMeasureType extends MeasureType<BitmapCounter> {
     public static final String FUNC_COUNT_DISTINCT = FunctionDesc.FUNC_COUNT_DISTINCT;
     public static final String FUNC_INTERSECT_COUNT_DISTINCT = "INTERSECT_COUNT";
-    public static final String FUNC_COUNT_DISTINCT_IF = "COUNT_DISTINCT_IF_BITMAP";
+    public static final String FUNC_COUNT_DISTINCT_IF = "COUNT_DISTINCT_IF";
     public static final String DATATYPE_BITMAP = "bitmap";
 
     public static class Factory extends MeasureTypeFactory<BitmapCounter> {
